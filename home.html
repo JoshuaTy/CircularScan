@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<head>
+        <link rel='stylesheet' href='css/bootstrap.css'>
+        <title>Circular Scan</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+</head>
+<style>
+.btn{
+width:100px;
+}
+
+body{
+background-color:#2a2827;
+color:white;
+font-family:"Verdana";
+}
+h1{
+padding-left: 40px;
+color:white;
+font-family: "Impact";
+}
+form{
+padding-left: 50px;
+}
+input{
+margin-top:-20px;
+color:black;
+border-radius: 1rem;
+}
+.form-control{
+width:200px;
+height:30px;
+}
+.leftside{
+height:500px;
+border-height:110px;
+border-right: 2px solid #A52A2A ;
+}
+.leftside p{
+margin-bottom:-10px;
+}
+
+.frmtop{
+height:50px;
+}
+.above{
+width:400px;
+border-height:110px;
+border-right: 2px solid #A52A2A ;
+margin-right:20px;
+}
+.showTracks{
+margin-top:420px;
+display:none;
+}
+.content{
+margin-left:60px;
+}
+
+#myModal{
+color:black;
+}
+</style>
+<body>
+<div class='container-fluid'>
+        <div class = 'row'>
+                <div class="col-md-1 frmtop"></div>
+        </div>
+        <div class='row '>
+                <div class = "col-md-5 above">
+                        <h1>CIRCULAR SCAN</h1>
+					<p>	<span class="glyphicon glyphicon-chevron-right"  aria-label="Left Align"></span>A variation of SCAN algorithm. Starts scanning from Starter head to Inner track then goes back to Outer track until the other end.</p>
+                        <form autocomplete="off">
+                        <div class="form-group">
+                                <br>
+                                        <p>User Access Request:</p>
+                                <br>
+                                  <input   type="text" name="tracks" class="form-control" id="tracks">
+                                <br>
+                                <br>
+                                   <p>Outer track level:</p>
+                                <br>
+                                  <input  type="number" name="blah" class="form-control" id="outerT">
+                                <br>
+                                <br>
+                                  <p>Inner track level: </p>
+                                <br>
+                                   <input   type="number" name="tracks"class="form-control" id="innerT">
+                                <br>
+                                <br>
+                                   <p>Starter head:     </p>
+                                <br>
+                                  <input  type="number" name="blah" class="form-control" id="starterHead">
+                                <br>	
+                                </div>
+                                  <input class="btn btn-success" value="Go" id="here">
+                        </form>
+                </div>
+			
+                <div class="col-md-7 content" style="display:none;background-color:white;height:400px; width:800px; ">
+                        <canvas class='chart' id="myChart" width="800" height="400"></canvas>					                         						
+				</div>
+				
+				
+				<button type="button" class="btn btn-danger btn-md showTracks" data-toggle="modal" data-target="#myModal">Tracks</button>
+				<!-- Modal -->
+				  <div class="modal fade" id="myModal" role="dialog">
+					<div class="modal-dialog">
+					
+					  <!-- Modal content-->
+					  <div class="modal-content">
+						<div class="modal-header">
+						  <button type="button" class="close" data-dismiss="modal">&times;</button>
+						  <h4 class="modal-title">Tracks</h4>
+						</div>
+						<div class="modal-body">
+				
+						</div>
+						<div class="modal-footer">
+						  <button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+						</div>
+					  </div>
+					  
+					</div>
+				  </div>
+			
+				
+        </div>
+
+
+
+        <div id="pen" class='target'>
+
+        </div>
+
+</div>
+</body>
+</html>
+<script src="js/jquery.min.js"></script>
+<script src="js/jquery-3.1.1.js"></script>
+<script src="js/Chart.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script>
+var id= document.getElementById("test"); 
+$(document).ready(function(){
+	document.getElementById("tracks").value = "";
+	document.getElementById("outerT").value = "";
+	document.getElementById("innerT").value = "";
+	document.getElementById("starterHead").value = "";
+	
+	
+		
+	var ctx = document.getElementById("myChart");
+	// Our labels along the x-axis
+	var time = [0,1,2,3,4,5,6,7,8,9,10,11,12,13];
+	// For drawing the lines
+    var x;
+	var y;
+	var temp;
+	
+	$("#here").click(function(){
+		
+		if($("#tracks").val()!="" && $("#outerT").val()!="" && $("#innerT").val()!="" && $("#starterHead").val()!=""){
+		
+		
+		//To prevent from displaying old list of tracks
+		$(".modal-body").html("");
+			var first;
+			var second;
+			var last;
+			var t = $("#tracks").val();
+			var Outer = $("#outerT").val();
+			var Inner = $("#innerT").val();
+			var head = $("#starterHead").val();			
+			t = t.split(",");			
+			//Converting head,Inner and Outer to integer
+			head=parseInt(head,10);
+			Inner=parseInt(Inner,10);
+			Outer=parseInt(Outer,10);	
+			console.log(t);
+			
+			//Check if head is less than Inner
+			if(head < Inner){
+			//Show Graph
+			$(".content").css("display","block");
+			$(".showTracks").css("display","block");		
+				//Converting string Tracks to integer
+				for(x=0;x<t.length;x++){
+				t[x]=parseInt(t[x], 10);
+				}
+				
+				console.log("old t "+t);
+				first=new Array(4);
+				second=new Array(4);
+				last=new Array(4);
+				
+				first[0]=head;
+				second[0]=Outer;	
+				
+				//Sorting the given input array
+				for(x=0;x<t.length;x++){
+					for(y=0;y<t.length;y++){
+						if(t[y]>t[y+1]){
+						temp=t[y];
+						t[y]=t[y+1];
+						t[y+1]=temp;
+						}
+					}
+				}
+				//Getting the tracks greater than the starting head
+				for(x=0,y=0;x<t.length;x++){	
+					if(t[x]>head){
+					y++;
+					first[y]=t[x];	
+					}
+				}
+				
+				first[first.length]=Inner;	
+				
+				//Getting the tracks lesser than the starting head
+				for(x=0;x<t.length;x++){
+					if(t[x]<head){
+						second[x+1]=t[x];
+					}
+				}
+				last = first.concat(second); 
+					
+				//Graph
+				var ctx = document.getElementById("myChart");
+				var myChart = new Chart(ctx, {
+					  type: 'line',
+					  data: {
+						labels: time,
+						datasets: [
+						  { 
+						   label: "Tracks",
+							data: last,
+							borderColor: "#3e95cd",
+							fill: false
+						  }
+						]
+					  }
+					});
+					
+				var difference;
+				var sum=0;
+				
+				//Display list of tracks
+				for(x=0;x<last.length-1;x++){
+				
+				difference=Math.abs(last[x]-last[x+1]);
+				sum=sum+difference;
+						
+				$(".modal-body").append("<p>"+last[x+1]+" - "+last[x]+"="+difference+" tracks</p>");
+				}
+				$(".modal-body").append("Total number of read/write movement is <strong>"+sum+" tracks</strong>");
+				
+				
+				}else{
+				alert("Starter head can't be greater than Inner track!");
+				$(".content").css("display","none");
+				$(".listofTracks").css("display","none");
+				}
+		
+		
+		
+	
+	
+			
+		}else{
+		alert("All fields must be filled up");
+	
+		}
+	});   
+	
+	
+	
+	
+	//80,25,118,100,63,105,59,110,28
+});
+</script>
